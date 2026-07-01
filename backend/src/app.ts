@@ -1,4 +1,5 @@
 import express, { Application, Request, Response } from 'express';
+import path from 'path';
 import cors from 'cors';
 import helmet from 'helmet';
 import { errorHandler } from './middlewares/errorHandler';
@@ -28,6 +29,15 @@ app.use('/api/v1/users', usersRoutes);
 app.use('/api/v1/vehicles', vehiclesRoutes);
 app.use('/api/v1/violations', violationsRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
+
+// Serve frontend static files
+const frontendPath = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendPath));
+
+// Catch-all route to serve the frontend application
+app.get('*', (req: Request, res: Response) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
+});
 
 // Global Error Handler
 app.use(errorHandler);
