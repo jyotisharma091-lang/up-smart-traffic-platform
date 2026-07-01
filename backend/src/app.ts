@@ -8,7 +8,10 @@ const app: Application = express();
 
 // Middlewares
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: ['https://aj.jyotiai.shop', 'http://localhost:5173', 'http://localhost:5000', 'https://up-smart-traffic-platform.onrender.com'],
+  credentials: true
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
