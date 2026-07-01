@@ -42,6 +42,7 @@ const router = (0, express_1.Router)();
 router.use(authMiddleware_1.authenticate);
 router.post('/', (0, validationMiddleware_1.validate)(violation_dto_1.createViolationSchema), ViolationsController.createViolation);
 router.get('/', ViolationsController.getViolations);
+router.get('/verification-queue', ViolationsController.getVerificationQueue);
 router.get('/:id', ViolationsController.getViolationById);
 router.put('/:id/status', (0, validationMiddleware_1.validate)(violation_dto_1.updateViolationStatusSchema), ViolationsController.updateStatus);
 // AI Stub

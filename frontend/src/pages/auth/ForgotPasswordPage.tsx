@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';

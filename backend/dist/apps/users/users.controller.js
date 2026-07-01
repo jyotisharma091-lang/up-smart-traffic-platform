@@ -1,16 +1,33 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPassword = exports.updateUser = exports.getUsers = exports.createUser = void 0;
+exports.deleteUser = exports.resetPassword = exports.updateUser = exports.getUsers = exports.createUser = void 0;
 const users_service_1 = require("./users.service");
 const createUser = async (req, res, next) => {
     try {
+        console.log("Creating user...", req.body);
         const creatorRole = req.user.role;
         const creatorDistrict = req.user.district;
         const user = await users_service_1.UserService.createUser(req.body, creatorRole, creatorDistrict);
+        console.log("User created successfully");
         res.status(201).json({ success: true, message: 'User created successfully', data: user });
     }
     catch (error) {
-        res.status(400).json({ success: false, message: error.message });
+        let errorMessage = error.message;
+        const cause = error.cause;
+        if (cause && cause.code === '23505') {
+            if (cause.constraint_name?.includes('mobile'))
+                errorMessage = 'Mobile Number is already registered.';
+            else if (cause.constraint_name?.includes('pno'))
+                errorMessage = 'PNO Number is already registered.';
+            else if (cause.constraint_name?.includes('username'))
+                errorMessage = 'User is already registered with these details.';
+            else
+                errorMessage = 'User already exists with these details.';
+        }
+        else if (errorMessage.startsWith('Failed query')) {
+            errorMessage = 'Database error occurred while saving.';
+        }
+        res.status(400).json({ success: false, message: errorMessage });
     }
 };
 exports.createUser = createUser;
@@ -49,3 +66,14 @@ const resetPassword = async (req, res, next) => {
     }
 };
 exports.resetPassword = resetPassword;
+const deleteUser = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        await users_service_1.UserService.deleteUser(id, req.user.role, req.user.district);
+        res.status(200).json({ success: true, message: 'User deleted successfully' });
+    }
+    catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
+exports.deleteUser = deleteUser;

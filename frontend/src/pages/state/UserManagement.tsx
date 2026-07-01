@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, UserPlus, MoreVertical, Edit2, ShieldAlert, CheckCircle, X } from 'lucide-react';

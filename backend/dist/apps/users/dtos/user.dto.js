@@ -22,6 +22,7 @@ exports.updateUserSchema = zod_1.z.object({
         status: zod_1.z.enum(['ACTIVE', 'DEACTIVATED', 'RETIRED']).optional(),
         fullName: zod_1.z.string().min(2).optional(),
         mobileNumber: zod_1.z.string().min(10).optional(),
+        pnoNumber: zod_1.z.string().optional(),
         rank: zod_1.z.string().optional(),
         designation: zod_1.z.string().optional(),
         policeStation: zod_1.z.string().optional(),

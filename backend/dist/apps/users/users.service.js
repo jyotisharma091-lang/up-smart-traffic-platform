@@ -8,6 +8,7 @@ const db_1 = require("../../config/db");
 const schema_1 = require("../../config/schema");
 const drizzle_orm_1 = require("drizzle-orm");
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const uuid_1 = require("uuid");
 class UserService {
     static async createUser(data, creatorRole, creatorDistrict) {
         // 1. RBAC Checks
@@ -17,12 +18,21 @@ class UserService {
         if (creatorRole === 'DISTRICT_ADMIN' && data.district !== creatorDistrict) {
             throw new Error('District Admins can only create users in their own district');
         }
+        if (creatorRole === 'STATE_ADMIN' && data.role !== 'DISTRICT_ADMIN') {
+            // State admin primarily creates District Admins
+            // But can technically create anyone if needed. We'll restrict to DISTRICT_ADMIN for this flow
+            if (data.role !== 'DISTRICT_ADMIN') {
+                throw new Error('State Admins can only create District Admins from this interface');
+            }
+        }
         // 2. Hash Password
         const passwordHash = await bcrypt_1.default.hash(data.password, 10);
         const { password, ...insertData } = data;
         // 3. Insert into DB
         const result = await db_1.db.insert(schema_1.users).values({
             ...insertData,
+            id: (0, uuid_1.v4)(),
+            isFirstLogin: true,
             passwordHash,
         }).returning();
         const { passwordHash: _, ...safeUser } = result[0];
@@ -66,7 +76,21 @@ class UserService {
             }
         }
         const passwordHash = await bcrypt_1.default.hash(newPasswordPlain, 10);
-        await db_1.db.update(schema_1.users).set({ passwordHash, updatedAt: new Date() }).where((0, drizzle_orm_1.eq)(schema_1.users.id, id));
+        // Resetting password by admin forces the user to change it again upon next login
+        await db_1.db.update(schema_1.users).set({ passwordHash, isFirstLogin: true, updatedAt: new Date() }).where((0, drizzle_orm_1.eq)(schema_1.users.id, id));
+        return true;
+    }
+    static async deleteUser(id, requesterRole, requesterDistrict) {
+        const targetUserList = await db_1.db.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.id, id));
+        if (targetUserList.length === 0)
+            throw new Error('User not found');
+        const targetUser = targetUserList[0];
+        if (requesterRole === 'DISTRICT_ADMIN') {
+            if (targetUser.district !== requesterDistrict || targetUser.role !== 'TRAFFIC_OFFICER') {
+                throw new Error('Unauthorized to delete this user');
+            }
+        }
+        await db_1.db.delete(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.id, id));
         return true;
     }
 }

@@ -47,4 +47,5 @@ router.get('/', UsersController.getUsers);
 router.post('/', (0, validationMiddleware_1.validate)(user_dto_1.createUserSchema), UsersController.createUser);
 router.put('/:id', (0, validationMiddleware_1.validate)(user_dto_1.updateUserSchema), UsersController.updateUser);
 router.put('/:id/reset-password', (0, validationMiddleware_1.validate)(user_dto_1.resetPasswordSchema), UsersController.resetPassword);
+router.delete('/:id', UsersController.deleteUser);
 exports.default = router;

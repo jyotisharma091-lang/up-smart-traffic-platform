@@ -5,7 +5,7 @@ const zod_1 = require("zod");
 exports.loginSchema = zod_1.z.object({
     body: zod_1.z.object({
         identifier: zod_1.z.string().min(3, 'Username or Email is required'),
-        password: zod_1.z.string().min(6, 'Password must be at least 6 characters'),
+        password: zod_1.z.string().min(1, 'Password is required'),
     }),
 });
 exports.verifyOtpSchema = zod_1.z.object({

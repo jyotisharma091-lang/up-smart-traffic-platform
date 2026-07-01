@@ -33,15 +33,37 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const AnalyticsController = __importStar(require("./analytics.controller"));
-const authMiddleware_1 = require("../../middlewares/authMiddleware");
-const roleMiddleware_1 = require("../../middlewares/roleMiddleware");
-const router = (0, express_1.Router)();
-router.use(authMiddleware_1.authenticate);
-// Admins and Officers can see analytics (Officers only see their own via service logic)
-router.use((0, roleMiddleware_1.authorizeRoles)('STATE_ADMIN', 'DISTRICT_ADMIN', 'TRAFFIC_OFFICER'));
-router.get('/dashboard', AnalyticsController.getDashboard);
-router.get('/heatmap', AnalyticsController.getHeatmap);
-router.get('/officer-activity', AnalyticsController.getOfficerActivity);
-exports.default = router;
+const db_1 = require("./config/db");
+const schema_1 = require("./config/schema");
+const bcrypt = __importStar(require("bcrypt"));
+const uuid_1 = require("uuid");
+async function seed() {
+    console.log('Seeding Database with State Admin...');
+    const passwordHash = await bcrypt.hash('admin123', 10);
+    // Creating a State Admin user
+    // State Admin logs in with Email + Password
+    const stateAdmin = {
+        id: (0, uuid_1.v4)(),
+        role: 'STATE_ADMIN',
+        fullName: 'State Administrator',
+        username: 'admin_state',
+        email: 'admin@up.police.gov.in',
+        mobileNumber: '9999999999',
+        passwordHash,
+        status: 'ACTIVE',
+        isFirstLogin: false, // System created admin can bypass forced change
+    };
+    try {
+        await db_1.db.insert(schema_1.users).values(stateAdmin);
+        console.log(`Successfully created State Admin: ${stateAdmin.email} / password: admin123`);
+    }
+    catch (e) {
+        console.log(`Failed or already exists:`, e);
+    }
+    console.log('Seeding Complete.');
+    process.exit(0);
+}
+seed().catch((err) => {
+    console.error('Seeding Error:', err);
+    process.exit(1);
+});

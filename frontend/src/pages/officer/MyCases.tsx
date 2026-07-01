@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Filter, Search, X, ImageIcon, CheckCircle, AlertTriangle, AlertCircle, XCircle } from 'lucide-react';

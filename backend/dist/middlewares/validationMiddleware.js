@@ -5,11 +5,14 @@ const zod_1 = require("zod");
 const validate = (schema) => {
     return (req, res, next) => {
         try {
-            schema.parse({
+            const parsed = schema.parse({
                 body: req.body,
                 query: req.query,
                 params: req.params,
             });
+            if (parsed.body)
+                req.body = parsed.body;
+            // Do not reassign req.query or req.params to avoid getter errors
             next();
         }
         catch (error) {
